@@ -1,0 +1,19 @@
+body {
+    padding: 10px;
+    background: #222;
+    color: #00dd00;
+    font-family: monospace;
+}
+
+button {
+    margin-bottom: 10px;
+}
+
+
+table td {
+    padding: 0 30px 5px 0;
+}
+
+table tr:last-child td {
+    color: white;
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SparkDevice Logger</title>
+    <link rel="stylesheet" href="assets/css/normalize.css">
+    <link rel="stylesheet" href="assets/css/site.css">
+    <script src="/assets/js/vendor/jquery/jquery.js"></script>
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+    <script src='/assets/js/vendor/momentjs/moment.js'></script>
+    <script src='/assets/js/vendor/handlebars.js'></script>
+    <script src='/assets/js/app.js'></script>
+</head>
+<body>
+
+    <button class="js-clear">Clear Log</button>
+
+    <table>
+        <tbody class="js-logger"></tbody>
+    </table>
+
+    <script class="hbs-entry" type="text/x-handlebars-template">
+        <tr>
+            <td>{{date}}</td>
+            <td>{{who}}</td>
+            <td>{{what}}</td>
+        </tr>
+    </script>
+</body>
+</html>
