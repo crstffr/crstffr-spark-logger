@@ -17,7 +17,16 @@ class ListHandler {
 }
 
 class LogHandler {
+
     function get($who) {
+        $this->send($who);
+    }
+
+    function post($who) {
+        $this->send($who);
+    }
+
+    function send($who) {
         $what = trim($_REQUEST['what']);
         $firebase = new Firebase(FIREBASE_URL);
         $firebase->push('logs', array(
@@ -28,5 +37,6 @@ class LogHandler {
         ));
         echo "OK";
     }
+
 }
 
