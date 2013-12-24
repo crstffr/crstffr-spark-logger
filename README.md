@@ -1,4 +1,5 @@
-spark
+Spark Logger
 =====
 
-tiny REST api for Spark Core logging
+Node TCP server for use as console logger
+

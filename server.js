@@ -3,23 +3,17 @@ var net = require('net');
 var moment = require('moment');
 var sparky = require('sparky');
 var firebase = require('firebase');
+var config = require('./config.js');
 var spotimote = require('./spotimote.js');
 var logs = new firebase('https://spark-logger.firebaseio.com/logs/');
-
-
-
 
 var THIS_IS_THE_END = false;
 var IP = getIP();
 var PORT = 5000;
-var TOKEN = '369418daf3546262c7b91e700364cee622a26209';
-var CORE = [
-    '48ff6b065067555039091087'
-];
 
 var core = new sparky({
-    deviceId: CORE[0],
-    token: TOKEN,
+    deviceId: config.cores[0],
+    token: config.token,
     debug: false
 })
 

@@ -8,7 +8,7 @@ function Spotimote(config) {
     this.noop = function(){};
 
     this.timeout = 60;
-    this.heartbeat = 10000; // ten seconds
+    this.heartbeat = 30000;
     this.interval = {};
     this.server = {
         ip:     config.server,
@@ -88,22 +88,14 @@ Spotimote.prototype = {
     },
 
     _send: function(str, callback) {
-
         callback = this._bind(callback);
-
-        var req = request({
-            uri: 'http://' + this.server.ip + ':' + this.server.port + this.server.path,
-            body: str,
-            method: 'POST',
-            encoding: 'utf8'
-        }, function(err, res, body){
-
+        var url = 'http://' + this.server.ip + ':' + this.server.port + this.server.path;
+        var req = request.post(url, {body: str}, function(err, res, body){
+            res.setEncoding('utf8');
+            this.server.conn = this._now();
             // @TODO: Error handling for when the server is unavailable
-
             callback(body);
-
-        }).end();
-
+        }.bind(this)).end();
     },
 
     _connect: function(callback) {
