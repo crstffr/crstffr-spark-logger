@@ -26,8 +26,7 @@
 
     Logger.prototype.writeToScreen = function(snapshot) {
         var data = snapshot.val();
-        data.date = moment.unix(data.when)
-                          .format("MM/DD/YY h:mm:ssA");
+        data.date = moment.unix(data.when).format("h:mm:ssA");
 
         var html = this.template(data);
         var $elm = $(html).attr('id', this.uid(data));

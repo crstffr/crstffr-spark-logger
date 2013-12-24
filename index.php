@@ -27,7 +27,11 @@ class LogHandler {
     }
 
     function send($who) {
-        $what = trim($_REQUEST['what']);
+        if (isset($_REQUEST['what'])) {
+            $what = trim($_REQUEST['what']);
+        } else {
+            $what = "nothing";
+        }
         $firebase = new Firebase(FIREBASE_URL);
         $firebase->push('logs', array(
             'who' => $who,
