@@ -48,18 +48,18 @@ var server = net.createServer(function (socket) {
     var SYN = "\x16";
     var buffer = '';
 
-    log("Connection: " + socket.remoteAddress + ":" + socket.remotePort);
+    log("Connection created: " + socket.remoteAddress + ":" + socket.remotePort);
 
     socket.setEncoding('utf8');
 
     socket.on('error', function (e) {
-        log("ERROR");
+        log("Connection error: ");
         log(e);
         triggerConnection();
     });
 
     socket.on('close', function (had_error) {
-        log("CLOSED (error: " + had_error + ")");
+        log("Connection closed (error: " + had_error + ")");
         triggerConnection();
     });
 
