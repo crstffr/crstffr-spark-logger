@@ -15,7 +15,7 @@ Copy contents of firmware.cpp onto your Spark Core and flash it.
 
 Install dependencies, run
 
-    node install
+    npm install
 
 Make sure Spark Core is breathing cyan, then run
 
