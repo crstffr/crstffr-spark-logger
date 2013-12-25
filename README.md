@@ -14,7 +14,7 @@ Install dependencies, run
 
     node install
 
-When all set to go, run
+Make sure Spark Core is breathing cyan, then run
 
     node server.js
 
