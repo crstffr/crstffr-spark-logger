@@ -10,7 +10,7 @@ var config = require('./config.js');
 // with others, they can see the output on their screens as well.
 
 // Supply your own Firebase data store URI if you use this.
-var logs = new firebase('https://spark-logger.firebaseio.com/logs/');
+var logs = new firebase(config.firebase);
 
 var IP = getIP();
 var PORT = 5000;
