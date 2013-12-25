@@ -80,6 +80,10 @@ int tcpLog(String message) {
     }
 }
 
+// ******************************
+// TCP Keep Alive
+// ******************************
+
 void tcpKeepAlive() {
     unsigned long now = millis();
     if (tcp.connected()) {
@@ -89,7 +93,6 @@ void tcpKeepAlive() {
             tcp.print(ENQ); // Heartbeat signal
             kaWait = now + 500;
             kaWaiting = true;
-            
             tcpKeepAliveReset();
         }
         if (kaWaiting && (kaWait > now)) {
