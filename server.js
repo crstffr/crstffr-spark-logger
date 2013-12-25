@@ -8,9 +8,8 @@ var config = require('./config.js');
 // I use Firebase to write some log information so that I can
 // have a web based log viewer if I need to work collaboratively
 // with others, they can see the output on their screens as well.
-
-// Supply your own Firebase data store URI if you use this.
-var logs = new firebase(config.firebase);
+// Supply your own Firebase URI in the config if you use this.
+// var logs = new firebase(config.firebase);
 
 var IP = getIP();
 var PORT = 5000;
@@ -126,7 +125,8 @@ var server = net.createServer(function (socket) {
         }
 
         // Send the information to Firebase
-        logs.push(data).setPriority(data.when);
+        // This causes a bit of latency if used.
+        // logs.push(data).setPriority(data.when);
 
         // Send the information to Node console
         logCore(data.what);
