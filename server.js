@@ -4,141 +4,174 @@ var moment = require('moment');
 var sparky = require('sparky');
 var firebase = require('firebase');
 var config = require('./config.js');
-var spotimote = require('./spotimote.js');
+
+// I use Firebase to write some log information so that I can
+// have a web based log viewer if I need to work collaboratively
+// with others, they can see the output on their screens as well.
+
+// Supply your own Firebase data store URI if you use this.
 var logs = new firebase('https://spark-logger.firebaseio.com/logs/');
 
-var THIS_IS_THE_END = false;
 var IP = getIP();
 var PORT = 5000;
-
 var core = new sparky({
-    deviceId: config.cores[0],
+    deviceId: config.core,
     token: config.token,
     debug: false
-})
-
-var spotify = new spotimote({
-    server: '192.168.0.114',
-    debug: true
 });
 
+// Show what IP address and Port our
+// server is currently listening on.
+log('Listening on ' + IP + ':' + PORT);
 
-
-
-
-function triggerConnection() {
-    if (THIS_IS_THE_END) { return; }
-    core.run('connect', IP);
-}
-
-function triggerDisconnect() {
-    core.run('disconnect');
-}
-
-log("Listening: " + IP + ":" + PORT);
-triggerConnection();
+// Tell the Core to connect right away.
+connect();
 
 var server = net.createServer(function (socket) {
 
-    var STX = "\x02";
-    var ETX = "\x03";
-    var EOT = "\x04";
-    var ENQ = "\x05";
-    var ACK = "\x06";
-    var SYN = "\x16";
-    var buffer = '';
+    // Here you will see the local IP and Port number the Core
+    // uses to connect to your TCPServer.  The port changes
+    // every time the socket closes and reconnects.
 
-    log("Connection created: " + socket.remoteAddress + ":" + socket.remotePort);
+    log('Connection from ' + socket.remoteAddress + ':' + socket.remotePort);
+
+    // Set encoding so we get text strings back
+    // instead of binary buffer data.
 
     socket.setEncoding('utf8');
 
-    socket.on('error', function (e) {
-        log("Connection error: ");
-        log(e);
-        triggerConnection();
-    });
+    // These are control codes that I use for
+    // various parts of the communication.
+
+    var STX = '\x02';
+    var ETX = '\x03';
+    var EOT = '\x04';
+    var ENQ = '\x05';
+    var ACK = '\x06';
+    var SYN = '\x16';
+
+    // When the socket connection naturally closes, after
+    // about 60 seconds or so, go ahead and trigger the
+    // Core to reconnect.  This keeps the TCP session
+    // alive much better than actual KeepAlive bits.
 
     socket.on('close', function (had_error) {
-        log("Connection closed (error: " + had_error + ")");
-        triggerConnection();
+        log('Connection closed (error: ' + had_error + ')');
+        connect();
     });
+
+    socket.on('error', function (e) {
+        log('Connection error');
+        log(e);
+    });
+
+    // Use buffer to hold incoming data until the entire
+    // message is received.  Messages start with STX and
+    // end with EOT.  The Device ID is separated from
+    // the rest of the message with an ETX.
+
+    var buffer = '';
 
     socket.on('data', function(data) {
 
         var first = data[0];
         var last  = data[data.length-1];
 
+        // KeepAlive bit, respond with ACK
+        // and return out to avoid parsing.
         if (first === ENQ) {
-            console.log(".");
+            log('ACK');
             socket.write(ACK);
+            buffer = '';
             return;
         }
 
+        // New message, reset buffer.
         if (first === STX) {
             buffer = '';
         }
 
+        // Append data to our buffer.
         buffer += data;
 
+        // Strip out our control codes and parse
+        // the message if this is the end.
         if (last === EOT) {
             parse(buffer.replace(STX ,'').replace(EOT ,''));
-            buffer = '';
         }
 
     });
 
+    /**
+     * Split the incoming data into usable pieces, the
+     * WHO (deviceID) and the WHAT of the message.
+     * @param str
+     */
     function parse(str) {
-
-        var data = {};
+        var data;
         var parts = str.split(ETX);
 
         if (parts.length === 1) {
             data = {
+                what: str,
                 who: 'unidentified',
-                what: str
+                when: moment().unix()
             }
         } else {
             data = {
                 who: parts[0],
-                what: parts[1]
+                what: parts[1],
+                when: moment().unix()
             }
         }
 
-        send(data);
+        // Send the information to Firebase
+        logs.push(data).setPriority(data.when);
 
+        // Send the information to Node console
+        logCore(data.what);
+
+        // Now handle the messages independently
         switch(data.what) {
-            case 'BTN1':
-                spotify.playPause();
+            case 'BTN1PRESSED':
+                log('Handle a BTN1 Press');
                 break;
         }
 
     }
 
-    function send(data) {
-        data.when = moment().unix();
-        //logs.push(data).setPriority(data.when);
-        log(data.what);
-    }
-
 }).listen(PORT);
 
-/*
-// this just hangs on ctrl+c
-process.on('SIGINT', function () {
-    THIS_IS_THE_END = true;
-    console.log("QUIT");
-    triggerDisconnect();
-});
-*/
-
-
-
-
-
-function log(message) {
-    console.log(moment().format('hh:mm:ssA') + " - ", message);
+/**
+ * Issue Cloud command to connect the core to the TCPServer.
+ */
+function connect() {
+    core.run('connect', IP);
 }
 
+/**
+ * Issue Cloud command to disconnect core from TCPServer.
+ */
+function disconnect() {
+    core.run('disconnect');
+}
+
+/**
+ * Utility to print messages to console with time stamp.
+ * @param message
+ */
+function log(msg) {
+    console.log(moment().format('hh:mm:ssA') + ' - SERVER', msg);
+};
+
+function logCore(msg) {
+    console.log(moment().format('hh:mm:ssA') + ' - CORE  ', msg);
+}
+
+/**
+ * Returns the IP address of the current server.
+ * @return {*}
+ */
 function getIP() {
     var ip = null;
     var ifs = os.networkInterfaces();
@@ -153,5 +186,3 @@ function getIP() {
     }
     return ip;
 }
-
-
